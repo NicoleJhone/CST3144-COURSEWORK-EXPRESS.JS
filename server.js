@@ -32,14 +32,8 @@ const MongoClient = require("mongodb").MongoClient;
 let db;
 MongoClient.connect(
   "mongodb+srv://dbUser:NewPassword%4001@cluster0.e3rl6.mongodb.net/",
-  { useUnifiedTopology: true },
   (err, client) => {
-    if (err) {
-      console.error("MongoDB connection error:", err);
-      return;
-    }
     db = client.db("Webstore");
-    console.log("MongoDB connected successfully");
   }
 );
 
