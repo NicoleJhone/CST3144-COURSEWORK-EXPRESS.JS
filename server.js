@@ -5,7 +5,6 @@ var app = express();
 //logger middleware
 app.use(function (req, res, next) {
   console.log("Request IP: " + req.url);
-  console.log("Request Method: " + req.method )
   console.log("Request date: " + new Date());
   next(); // this should stop the browser from hanging
 });
@@ -99,7 +98,6 @@ app.use(function (request, response) {
   response.end("Looks like you didn't find a static file.");
 });
 
-//starts server
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log("Express.js server running at localhost:3000");
