@@ -99,6 +99,7 @@ app.use(function (request, response) {
   response.end("Looks like you didn't find a static file.");
 });
 
+//starts server
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log("Express.js server running at localhost:3000");
