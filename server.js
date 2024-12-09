@@ -2,20 +2,18 @@ var express = require("express");
 var path = require("path");
 var app = express();
 
-// Logger middleware
+//logger middleware
 app.use(function (req, res, next) {
-  const method = req.method;           
-  const url = req.originalUrl;       
-  const ip = req.ip || req.connection.remoteAddress; 
-  const timestamp = new Date().toISOString(); 
-
-  console.log(`[${timestamp}] ${method} ${url} - IP: ${ip}`);
-  next(); 
+  console.log("Request IP: " + req.url);
+  console.log("Request Method: " + req.method )
+  console.log("Request date: " + new Date());
+  next(); // this should stop the browser from hanging
 });
-
 
 app.use(express.json());
 app.set("port", 3000);
+
+//cors support
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Credentials", "true");
@@ -75,9 +73,10 @@ app.get("/collection/:collectionName/:id", (req, res, next) => {
 });
 
 app.put("/collection/:collectionName/:id", (req, res, next) => {
-  req.collection.updateOne(
+  req.collection.update(
     { _id: new ObjectID(req.params.id) },
     { $set: req.body },
+    { safe: true, multi: false },
     (e, result) => {
       if (e) return next(e);
       res.send(result.result.n === 1 ? { msg: "success" } : { msg: "error" });
