@@ -35,6 +35,12 @@ MongoClient.connect(
 );
 
 
+// display a message for root path to show that API is working
+app.get("/", (req, res, next) => {
+    res.send("Hello World!");
+  });
+
+  
 // Sets up the path where the static files are
 var imagePath = path.resolve(__dirname, "images");
 app.use(express.static(imagePath));
