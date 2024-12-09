@@ -8,7 +8,6 @@ app.use(function (req, res, next) {
   next(); // this should stop the browser from hanging
 });
 
-
 app.use(express.json());
 app.set("port", 3000);
 
@@ -34,13 +33,34 @@ MongoClient.connect(
   }
 );
 
-
 // display a message for root path to show that API is working
 app.get("/", (req, res, next) => {
-    res.send("Hello World!");
-  });
+  res.send("Hello World!");
+});
 
-  
+// get the collection name
+app.param("collectionName", (req, res, next, collectionName) => {
+  req.collection = db.collection(collectionName);
+  //   console.log('collection name:', req.collection)
+  return next();
+});
+
+//returns all the lessons as a Json
+app.get("/collection/:collectionName", (req, res, next) => {
+  req.collection.find({}).toArray((e, results) => {
+    if (e) return next(e);
+    res.send(results);
+  });
+});
+
+//saves a new order to the “order” collection
+app.post("/collection/:collectionName", (req, res, next) => {
+  req.collection.insert(req.body, (e, results) => {
+    if (e) return next(e);
+    res.send(results.ops);
+  });
+});
+
 // Sets up the path where the static files are
 var imagePath = path.resolve(__dirname, "images");
 app.use(express.static(imagePath));
