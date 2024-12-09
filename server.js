@@ -24,6 +24,16 @@ app.use((req, res, next) => {
   next();
 });
 
+// mongodb connection
+const MongoClient = require("mongodb").MongoClient;
+let db;
+MongoClient.connect(
+  "mongodb+srv://dbUser:NewPassword%4001@cluster0.e3rl6.mongodb.net/",
+  (err, client) => {
+    db = client.db("Webstore");
+  }
+);
+
 
 // Sets up the path where the static files are
 var imagePath = path.resolve(__dirname, "images");
