@@ -101,7 +101,7 @@ app.delete("/collection/:collectionName/:id", (req, res, next) => {
 
  
 app.use(function(request,response,next){
-  var filePath = path.join(__dirname, "images", request.url);
+  var filePath = path.join(__dirname, "static", request.url);
   fs.stat(filePath, function(err, fileInfo) {
       if (err) {
           next();
