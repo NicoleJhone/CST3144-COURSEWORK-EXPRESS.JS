@@ -1,6 +1,8 @@
 var express = require("express");
 var path = require("path");
 var app = express();
+var fs = require("fs"); 
+
 
 // Logger middleware
 app.use(function (req, res, next) {
