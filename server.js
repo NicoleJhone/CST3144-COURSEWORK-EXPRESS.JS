@@ -97,13 +97,24 @@ app.delete("/collection/:collectionName/:id", (req, res, next) => {
   });
 });
 
-// Sets up the path where the static files are
-var imagePath = path.resolve(__dirname, "images");
-app.use(express.static(imagePath));
-app.use(function (request, response) {
-  response.writeHead(200, { "Content-Type": "text/plain" });
-  response.end("Looks like you didn't find a static file.");
-});
+ 
+app.use(function(request,response,next){
+  var filePath = path.join(__dirname, "images", request.url);
+  fs.stat(filePath, function(err, fileInfo) {
+      if (err) {
+          next();
+          return;
+      }
+      if (fileInfo.isFile()) 
+          response.sendFile(filePath);
+      else next();
+  })
+})
+
+app.use(function(request, response) {
+  response.status(404);
+  response.send("File not found!");
+})
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
