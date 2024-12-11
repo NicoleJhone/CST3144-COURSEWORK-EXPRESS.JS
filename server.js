@@ -3,7 +3,7 @@ var path = require("path");
 var app = express();
 var fs = require("fs");
 
-// Logger middleware
+// Logger middleware to log request method, URL, and IP address
 app.use(function (req, res, next) {
   const method = req.method;
   const url = req.originalUrl;
@@ -14,6 +14,7 @@ app.use(function (req, res, next) {
   next();
 });
 
+// CORS middleware to allow cross-origin requests
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Credentials", "true");
@@ -26,7 +27,7 @@ app.use((req, res, next) => {
     "Origin, X-Requested-With, Content-Type, Accept, Authorization"
   );
 
-  // Handle preflight requests
+  // Handle preflight OPTIONS requests
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
@@ -36,9 +37,8 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
-// mongodb connection
+// MongoDB connection setup
 const MongoClient = require("mongodb").MongoClient;
-
 let db;
 
 MongoClient.connect(
@@ -54,42 +54,40 @@ MongoClient.connect(
   }
 );
 
-// display a message for root path to show that API is working
+// Root path to verify the API is working
 app.get("/", (req, res, next) => {
   res.send("Hello World!");
 });
 
-// get the collection name
+// Middleware to set collection based on URL parameter
 app.param("collectionName", (req, res, next, collectionName) => {
   req.collection = db.collection(collectionName);
-  //   console.log('collection name:', req.collection)
   return next();
 });
 
-//returns all the lessons as a Json
+// Endpoint to get all documents from a collection
 app.get("/collection/:collectionName", (req, res, next) => {
   req.collection.find({}).toArray((e, results) => {
     if (e) return next(e);
-    res.send(results);
+    res.send(results); // Return the documents in JSON format
   });
 });
 
-//saves a new order to the “order” collection
+// Endpoint to save a new order to the collection
 app.post("/collection/:collectionName", (req, res, next) => {
   req.collection.insert(req.body, (e, results) => {
     if (e) return next(e);
-    res.send(results.ops);
+    res.send(results.ops); // Send inserted data back in response
   });
 });
 
-//search route
+// Search endpoint for filtering lessons based on query parameters
 app.get("/search", (req, res, next) => {
   const searchQuery = req.query.q; // Search term for title or location
   const priceQuery = req.query.price; // Filter by price
   const availableSpaceQuery = req.query.availableSpace; // Filter by available space
 
   const collection = db.collection("lessons"); // Lessons collection
-
   let filter = {};
 
   // Filter by title or location if search term is provided
@@ -115,20 +113,21 @@ app.get("/search", (req, res, next) => {
   // Query MongoDB with the filter
   collection.find(filter).toArray((err, results) => {
     if (err) return res.status(500).json({ error: "Internal server error." });
-    res.json(results); // Return results
+    res.json(results); // Return results as JSON
   });
 });
 
-
+// Fetch a single document by ID
 const ObjectID = require("mongodb").ObjectID;
 
 app.get("/collection/:collectionName/:id", (req, res, next) => {
   req.collection.findOne({ _id: new ObjectID(req.params.id) }, (e, result) => {
     if (e) return next(e);
-    res.send(result);
+    res.send(result); // Return the document
   });
 });
 
+// Update a document by ID
 app.put("/collection/:collectionName/:id", (req, res, next) => {
   req.collection.update(
     { _id: new ObjectID(req.params.id) },
@@ -141,6 +140,7 @@ app.put("/collection/:collectionName/:id", (req, res, next) => {
   );
 });
 
+// Delete a document by ID
 app.delete("/collection/:collectionName/:id", (req, res, next) => {
   req.collection.deleteOne({ _id: ObjectID(req.params.id) }, (e, result) => {
     if (e) return next(e);
@@ -148,6 +148,7 @@ app.delete("/collection/:collectionName/:id", (req, res, next) => {
   });
 });
 
+// Static file serving middleware
 app.use(function (request, response, next) {
   var filePath = path.join(__dirname, "static", request.url);
   fs.stat(filePath, function (err, fileInfo) {
@@ -160,11 +161,13 @@ app.use(function (request, response, next) {
   });
 });
 
+// 404 handler for missing files
 app.use(function (request, response) {
   response.status(404);
   response.send("File not found!");
 });
 
+// Start the server on the specified port
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log("Express.js server running at localhost:3000");
