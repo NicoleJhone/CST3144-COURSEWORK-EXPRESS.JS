@@ -20,19 +20,28 @@ app.use(function (req, res, next) {
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Credentials", "true");
-  res.setHeader("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
+  res.setHeader("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT,DELETE");
   res.setHeader(
     "Access-Control-Allow-Headers",
-    "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers"
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
   );
+
+  // Handle preflight requests
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
   next();
 });
+
 
 app.use(express.json());
 
 // mongodb connection
 const MongoClient = require("mongodb").MongoClient;
+
 let db;
+
 MongoClient.connect(
   "mongodb+srv://dbUser:NewPassword%4001@cluster0.e3rl6.mongodb.net/",
   { useUnifiedTopology: true },
@@ -73,6 +82,7 @@ app.post("/collection/:collectionName", (req, res, next) => {
     res.send(results.ops);
   });
 });
+
 
 const ObjectID = require("mongodb").ObjectID;
 
