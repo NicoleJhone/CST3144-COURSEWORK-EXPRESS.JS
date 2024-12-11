@@ -13,4 +13,4 @@ https://github.com/NicoleJhone/CST3144-COURSEWORK-EXPRESS.JS.git
 
 [AWS (or render.com) Express.js App] the link to the AWS (or 
 render.com) route that returns all the lessons. 
-https://cst3144-coursework-express-js.onrender.com
+https://cst3144-coursework-express-js.onrender.com/collection/lessons
