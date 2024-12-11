@@ -16,7 +16,7 @@ app.use(function (req, res, next) {
 });
 
 
-app.use(express.json());
+
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Credentials", "true");
@@ -28,6 +28,7 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use(express.json());
 
 // mongodb connection
 const MongoClient = require("mongodb").MongoClient;
