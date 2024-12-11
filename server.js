@@ -1,26 +1,26 @@
 var express = require("express");
 var path = require("path");
 var app = express();
-var fs = require("fs"); 
-
+var fs = require("fs");
 
 // Logger middleware
 app.use(function (req, res, next) {
-  const method = req.method;           
-  const url = req.originalUrl;       
-  const ip = req.ip || req.connection.remoteAddress; 
-  const timestamp = new Date().toISOString(); 
+  const method = req.method;
+  const url = req.originalUrl;
+  const ip = req.ip || req.connection.remoteAddress;
+  const timestamp = new Date().toISOString();
 
   console.log(`[${timestamp}] ${method} ${url} - IP: ${ip}`);
-  next(); 
+  next();
 });
-
-
 
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Credentials", "true");
-  res.setHeader("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT,DELETE");
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET,HEAD,OPTIONS,POST,PUT,DELETE"
+  );
   res.setHeader(
     "Access-Control-Allow-Headers",
     "Origin, X-Requested-With, Content-Type, Accept, Authorization"
@@ -33,7 +33,6 @@ app.use((req, res, next) => {
 
   next();
 });
-
 
 app.use(express.json());
 
@@ -83,6 +82,43 @@ app.post("/collection/:collectionName", (req, res, next) => {
   });
 });
 
+//search route
+app.get("/search", (req, res, next) => {
+  const searchQuery = req.query.q; // Search term for title or location
+  const priceQuery = req.query.price; // Filter by price
+  const availableSpaceQuery = req.query.availableSpace; // Filter by available space
+
+  const collection = db.collection("lessons"); // Lessons collection
+
+  let filter = {};
+
+  // Filter by title or location if search term is provided
+  if (searchQuery) {
+    filter = {
+      $or: [
+        { title: { $regex: searchQuery, $options: "i" } },
+        { location: { $regex: searchQuery, $options: "i" } },
+      ],
+    };
+  }
+
+  // Add price filter if provided
+  if (priceQuery) {
+    filter.price = parseFloat(priceQuery);
+  }
+
+  // Add availableSpace filter if provided
+  if (availableSpaceQuery) {
+    filter.availableSpace = parseInt(availableSpaceQuery, 10);
+  }
+
+  // Query MongoDB with the filter
+  collection.find(filter).toArray((err, results) => {
+    if (err) return res.status(500).json({ error: "Internal server error." });
+    res.json(results); // Return results
+  });
+});
+
 
 const ObjectID = require("mongodb").ObjectID;
 
@@ -105,7 +141,6 @@ app.put("/collection/:collectionName/:id", (req, res, next) => {
   );
 });
 
-
 app.delete("/collection/:collectionName/:id", (req, res, next) => {
   req.collection.deleteOne({ _id: ObjectID(req.params.id) }, (e, result) => {
     if (e) return next(e);
@@ -113,24 +148,22 @@ app.delete("/collection/:collectionName/:id", (req, res, next) => {
   });
 });
 
- 
-app.use(function(request,response,next){
+app.use(function (request, response, next) {
   var filePath = path.join(__dirname, "static", request.url);
-  fs.stat(filePath, function(err, fileInfo) {
-      if (err) {
-          next();
-          return;
-      }
-      if (fileInfo.isFile()) 
-          response.sendFile(filePath);
-      else next();
-  })
-})
+  fs.stat(filePath, function (err, fileInfo) {
+    if (err) {
+      next();
+      return;
+    }
+    if (fileInfo.isFile()) response.sendFile(filePath);
+    else next();
+  });
+});
 
-app.use(function(request, response) {
+app.use(function (request, response) {
   response.status(404);
   response.send("File not found!");
-})
+});
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
