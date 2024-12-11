@@ -54,17 +54,10 @@ MongoClient.connect(
   }
 );
 
-// Root path to display all lessons
+// Root path to verify the API is working
 app.get("/", (req, res, next) => {
-  // Fetch all lessons from the 'lessons' collection
-  db.collection("lessons").find({}).toArray((err, results) => {
-    if (err) {
-      return next(err); // Handle errors if any
-    }
-    res.json(results); // Send lessons data as JSON
-  });
+  res.send("Hello World!");
 });
-
 
 // Middleware to set collection based on URL parameter
 app.param("collectionName", (req, res, next, collectionName) => {
