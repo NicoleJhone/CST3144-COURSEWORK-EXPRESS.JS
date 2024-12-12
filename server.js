@@ -81,40 +81,30 @@ app.post("/collection/:collectionName", (req, res, next) => {
   });
 });
 
-
+// Search endpoint for filtering lessons based on query parameters
 app.get("/search", (req, res, next) => {
-  const searchQuery = req.query.q; // Search term for title or location
-  const priceQuery = req.query.price; // Filter by price
-  const availableSpaceQuery = req.query.availableSpace; // Filter by available space
+  const searchQuery = req.query.q; // Search term
 
-  const collection = db.collection("lessons");
+  const collection = db.collection("lessons"); // Lessons collection
   let filter = {};
 
-  // Search by title or location
+  // Filter by title or location if search term is provided
   if (searchQuery) {
+    const searchNumber = parseFloat(searchQuery); // Convert query to number if possible
     filter.$or = [
-      { title: { $regex: searchQuery, $options: "i" } },
-      { location: { $regex: searchQuery, $options: "i" } },
-    ];
+      { title: { $regex: searchQuery, $options: "i" } }, // Match in title
+      { location: { $regex: searchQuery, $options: "i" } }, // Match in location
+      { price: isNaN(searchNumber) ? undefined : searchNumber }, // Match numeric price
+      { availableSpace: isNaN(searchNumber) ? undefined : searchNumber }, // Match numeric space
+    ].filter((condition) => condition !== undefined); // Remove invalid conditions
   }
 
-  // Filter by price
-  if (priceQuery) {
-    filter.price = { $eq: parseFloat(priceQuery) };
-  }
-
-  // Filter by available space
-  if (availableSpaceQuery) {
-    filter.availableSpace = { $eq: parseInt(availableSpaceQuery, 10) };
-  }
-
-  // Query MongoDB and return results
+  // Query MongoDB with the filter
   collection.find(filter).toArray((err, results) => {
-    if (err) return res.status(500).json({ error: "Internal server error." });
-    res.json(results);
+    if (err) return res.status(500).json({ error: "Internal server error." }); // Handle errors
+    res.json(results); // Return matching results
   });
 });
-
 
 // Fetch a single document by ID
 const ObjectID = require("mongodb").ObjectID;
