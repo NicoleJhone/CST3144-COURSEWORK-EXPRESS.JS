@@ -81,41 +81,40 @@ app.post("/collection/:collectionName", (req, res, next) => {
   });
 });
 
-// Search endpoint for filtering lessons based on query parameters
+
 app.get("/search", (req, res, next) => {
   const searchQuery = req.query.q; // Search term for title or location
   const priceQuery = req.query.price; // Filter by price
   const availableSpaceQuery = req.query.availableSpace; // Filter by available space
 
-  const collection = db.collection("lessons"); // Lessons collection
+  const collection = db.collection("lessons");
   let filter = {};
 
-  // Filter by title or location if search term is provided
+  // Search by title or location
   if (searchQuery) {
-    filter = {
-      $or: [
-        { title: { $regex: searchQuery, $options: "i" } },
-        { location: { $regex: searchQuery, $options: "i" } },
-      ],
-    };
+    filter.$or = [
+      { title: { $regex: searchQuery, $options: "i" } },
+      { location: { $regex: searchQuery, $options: "i" } },
+    ];
   }
 
-  // Add price filter if provided
+  // Filter by price
   if (priceQuery) {
-    filter.price = parseFloat(priceQuery);
+    filter.price = { $eq: parseFloat(priceQuery) };
   }
 
-  // Add availableSpace filter if provided
+  // Filter by available space
   if (availableSpaceQuery) {
-    filter.availableSpace = parseInt(availableSpaceQuery, 10);
+    filter.availableSpace = { $eq: parseInt(availableSpaceQuery, 10) };
   }
 
-  // Query MongoDB with the filter
+  // Query MongoDB and return results
   collection.find(filter).toArray((err, results) => {
     if (err) return res.status(500).json({ error: "Internal server error." });
-    res.json(results); // Return results as JSON
+    res.json(results);
   });
 });
+
 
 // Fetch a single document by ID
 const ObjectID = require("mongodb").ObjectID;
